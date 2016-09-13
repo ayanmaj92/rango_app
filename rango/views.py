@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import login_required
 
 from rango.models import Category,Page, UserProfile
 from rango.forms import CategoryForm,PageForm, UserForm, UserProfileForm
@@ -75,6 +76,7 @@ def show_category(request, category_name_slug):
 	# Go render the response and return it to the client
 	return render(request, 'rango/category.html', context_dict)
 
+@login_required
 def add_category(request):
 	form = CategoryForm()
 	# A HTTP POST?
@@ -107,6 +109,7 @@ def add_category(request):
 	# Render the form with error msg if any.
 	return render(request, 'rango/add_category.html', {'form': form})
 
+@login_required
 def add_page(request, category_name_slug):
 	try:
 		category = Category.objects.get(slug=category_name_slug)
@@ -235,3 +238,14 @@ def user_login(request):
 	else:
 		# No context variables to pass to template system.
 		return render(request, 'rango/login.html', {})
+
+# Use the login_required() decorator to ensure only those
+# logged in can access the view.
+@login_required
+def user_logout(request):
+	# Since we know the user is logged in, we can now just
+	# log them out.
+	print ("Inside logout")
+	logout(request)
+	# Take the user back to homepage.
+	return HttpResponseRedirect(reverse('index'))
